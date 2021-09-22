@@ -1,6 +1,8 @@
 package bot
 
 import (
+	"server/service/myviper"
+
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
@@ -13,6 +15,6 @@ type Input struct {
 func LoginInfo(input Input) {
 	ResMsg := "bot test:\n" + "Email: " + input.Email + "\n" + "Subject: " + input.Subject + "\n" + "Message: " + input.Message + "\n"
 
-	msg := tgbotapi.NewMessage(OwnerID, ResMsg)
+	msg := tgbotapi.NewMessage(myviper.New().GetInt64("OwnerID"), ResMsg)
 	BotConn.Send(msg)
 }

@@ -1,9 +1,8 @@
 package bot
 
-import tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
-
-const OwnerID int64 = 1366159494
-const BotToken = "1307746334:AAFHYRHeJvgCZBf0GBT3noRl5IKdZMLzCfo"
+import (
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
+)
 
 var Sugar string
 var Arguments string

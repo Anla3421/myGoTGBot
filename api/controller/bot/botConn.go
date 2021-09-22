@@ -3,6 +3,7 @@ package bot
 import (
 	"fmt"
 	"log"
+	"server/service/myviper"
 	"strconv"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
@@ -21,12 +22,13 @@ func init() {
 	MovieKB = tgbotapi.NewInlineKeyboardMarkup(total...)
 
 	fmt.Println("bot initial")
-	bot, err := tgbotapi.NewBotAPI(BotToken)
+	// bot, err := tgbotapi.NewBotAPI(BotToken)
+	bot, err := tgbotapi.NewBotAPI(myviper.New().GetString("BotToken"))
 	if err != nil {
 		log.Panic(err)
 	}
 
-	bot.Debug = false
+	bot.Debug = true
 	BotConn = bot
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 

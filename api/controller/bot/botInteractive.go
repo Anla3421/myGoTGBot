@@ -3,8 +3,12 @@ package bot
 import (
 	"fmt"
 	"log"
+	"server/api/controller/movie"
 	"server/model/dao"
+	"server/service/myviper"
 	"strconv"
+	"strings"
+	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
@@ -47,14 +51,23 @@ func Bot() {
 			}
 			//電影選項回應
 			if update.CallbackQuery.Message.Text == "豆瓣網電影精選" {
+
+				start := time.Now()
 				ID, _ := strconv.Atoi(update.CallbackQuery.Data)
 				msg.Text = ""
-				for Rank := 25*ID + 1; Rank < 25*ID+26; Rank++ {
-					result := dao.Moviesqlget(Rank).Idre + "  " + dao.Moviesqlget(Rank).Moviename + "\n"
-					msg.Text += result
-				}
+				// for DB use:
+				// for Rank := 25*ID + 1; Rank < 25*ID+26; Rank++ {
+				// 	result := dao.Moviesqlget(Rank).Idre + "  " + dao.Moviesqlget(Rank).Moviename + "\n"
+				// 	msg.Text += result
+				// }
+
+				// for map use:
+				msg.Text = strings.Join(movie.GetMoviePage(strconv.Itoa(ID)), " \n")
+
 				msg.Text = "電影推薦TOP" + strconv.Itoa(1+25*(ID)) + "~" + strconv.Itoa(25*(ID+1)) + ":\n" +
 					msg.Text + "\n請使用https://movie.douban.com/subject/\n+上述電影的數字來進入該電影之介紹"
+				elapsed := time.Since(start)
+				fmt.Printf("Took %s\n", elapsed)
 			}
 			if update.CallbackQuery.Message.Text == "請選擇甜度" {
 				msg.Text = update.CallbackQuery.Data
@@ -104,7 +117,7 @@ func Bot() {
 						msg.Text = "目前沒有人點餐喔"
 					}
 				case "clear":
-					if update.Message.Chat.ID == OwnerID {
+					if update.Message.Chat.ID == myviper.New().GetInt64("OwnerID") {
 						dao.Drinksqltruncate()
 						Drinkid = 0
 						msg.Text = "table clear complete"
@@ -126,7 +139,7 @@ func Bot() {
 				default:
 					//對特定人士回復特定的問候語
 					switch update.Message.Chat.ID {
-					case OwnerID:
+					case myviper.New().GetInt64("OwnerID"):
 						msg.Text = "主人您好"
 					default:
 						msg.Text = "指令錯誤"
@@ -135,7 +148,7 @@ func Bot() {
 					textToSend += strconv.Quote(update.Message.Chat.LastName) + " 他說： " + update.Message.Text + ", ID是 "
 					textToSend += strconv.FormatInt(update.Message.Chat.ID, 10)
 
-					BotConn.Send(tgbotapi.NewMessage(OwnerID, textToSend))
+					BotConn.Send(tgbotapi.NewMessage(myviper.New().GetInt64("OwnerID"), textToSend))
 				}
 				BotConn.Send(msg)
 			}

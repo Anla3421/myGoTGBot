@@ -3,6 +3,7 @@ package bot
 import (
 	"fmt"
 	"net/http"
+	"server/service/myviper"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -37,7 +38,7 @@ func Message(c *gin.Context) {
 	response.Message = Input.Message
 	c.JSON(http.StatusOK, response)
 
-	msg := tgbotapi.NewMessage(OwnerID, response.Message)
+	msg := tgbotapi.NewMessage(myviper.New().GetInt64("OwnerID"), response.Message)
 	msg.Text = response.Message
 	BotConn.Send(msg)
 }

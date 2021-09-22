@@ -9,6 +9,9 @@ import (
 //---------------------------------------------------------------------------
 func main() {
 	go api.Api()
-	go movie.Moviespider()
-	bot.Bot()
+	go bot.Bot()
+
+	// movie.Moviespider() // DB & sleep
+	movie.MovieTimer() // map & channel
+
 }

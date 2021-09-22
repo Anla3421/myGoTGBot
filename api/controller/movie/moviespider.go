@@ -12,10 +12,12 @@ import (
 	"time"
 )
 
+// 建立請求
+var client = &http.Client{}
+
 func fetch(url string) string {
 	fmt.Println("Fetch Url", url)
-	// 建立請求
-	client := &http.Client{}
+
 	// 建立HTTP客戶端
 	req, _ := http.NewRequest("GET", url, nil)
 	// 發出請求
@@ -62,6 +64,7 @@ func parseUrls(url string, i int) {
 	}
 }
 
+//用time.Sleep一小時更新一次列表
 func Moviespider() {
 	start := time.Now()
 	for {
