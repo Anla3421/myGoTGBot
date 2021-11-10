@@ -3,6 +3,7 @@ package movie
 import (
 	"fmt"
 	"regexp"
+	"server/service/myviper"
 	"strings"
 
 	"strconv"
@@ -31,7 +32,7 @@ func (task *MovieList) parseUrlsToMap(url string, i int) (MovieData MovieData) {
 func (task *MovieList) MoviespiderNew(sliceChan chan []string) {
 
 	start := time.Now()
-	for i := 0; i < 2; i++ {
+	for i := 0; i < myviper.New().GetInt("movieMaxPage"); i++ {
 		//一頁有25個電影，共10頁
 		// sliceChan <- task.parseUrlsToMap("https://movie.douban.com/top250?start="+strconv.Itoa(25*i), i)
 		// MovieListMap[strconv.Itoa(i)] = MovieListRawData
