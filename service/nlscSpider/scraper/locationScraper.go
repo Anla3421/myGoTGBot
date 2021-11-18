@@ -62,7 +62,7 @@ func NewLocationRequest(url string, gnss *GNSS) (code int, req *http.Request, er
 
 	req, err = http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
-		code = 404 //errorCode.Error
+		code = errorCode.Error
 	}
 	req.URL.Path = fmt.Sprintf("%s/%f/%f", req.URL.Path, gnss.Lng, gnss.Lat)
 	return

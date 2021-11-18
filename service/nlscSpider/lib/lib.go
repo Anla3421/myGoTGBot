@@ -3,6 +3,7 @@ package lib
 import (
 	"encoding/json"
 	"fmt"
+	"server/service/mylib/errorCode"
 	"server/service/nlscSpider/config"
 	"strings"
 
@@ -64,11 +65,11 @@ func DangerMessage(chatID int64, text string) (newMS tgbotapi.MessageConfig) {
 func CheckChatID(id int64) (code int, data interface{}, err error) {
 	for _, userId := range config.AllowChatId {
 		if userId == id {
-			code = 200 //errorCode.Success
+			code = errorCode.Success
 			return
 		}
 	}
-	code = 401 //errorCode.TgNotFoundUser
+	code = errorCode.TgNotFoundUser
 	return
 }
 
@@ -99,7 +100,7 @@ func VenueMessage(chatId int64, msType string, title string, text string, latitu
 func JsonToString(jsonData interface{}) (code int, data string, err error) {
 	byteData, err := json.Marshal(jsonData)
 	if err != nil {
-		code = 600 //errorCode.EncodeJsonError
+		code = errorCode.EncodeJsonError
 		return
 	}
 	data = string(byteData)
@@ -110,7 +111,7 @@ func StringToReq(reqStr string) (code int, req *CallBackReq, err error) {
 	req = &CallBackReq{}
 	err = json.Unmarshal([]byte(reqStr), req)
 	if err != nil {
-		code = 800 //errorCode.DecodeJsonError
+		code = errorCode.DecodeJsonError
 		return
 	}
 	return
@@ -119,7 +120,7 @@ func StringToReq(reqStr string) (code int, req *CallBackReq, err error) {
 func SetCallBackReq(action string, req interface{}) (code int, data string, err error) {
 	reqData, err := json.Marshal(req)
 	if err != nil {
-		code = 1000 //errorCode.EncodeJsonError
+		code = errorCode.EncodeJsonError
 		return
 	}
 	byteData, jErr := json.Marshal(&CallBackReq{
@@ -127,7 +128,7 @@ func SetCallBackReq(action string, req interface{}) (code int, data string, err 
 		Req:    string(reqData),
 	})
 	if jErr != nil {
-		code = 1000 //errorCode.EncodeJsonError
+		code = errorCode.EncodeJsonError
 		return
 	}
 	data = string(byteData)

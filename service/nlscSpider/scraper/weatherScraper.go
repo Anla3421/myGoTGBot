@@ -88,7 +88,7 @@ func NewWeatherScraper(config *config.WeatherChecker) *WeatherScraper {
 func NewWeatherRequest(url string, townName string, token string) (code int, req *http.Request, err error) {
 	req, err = http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
-		code = 404 //errorCode.Error
+		code = errorCode.Error
 	}
 	q := req.URL.Query()
 	q.Add("Authorization", token)
@@ -163,7 +163,7 @@ func (scraper *WeatherScraper) Job(param *WeatherReq) (code int, data *WeatherSt
 func DecodeWeatherStatus(weatherData *Location) (code int, data *WeatherStatus, err error) {
 	data = &WeatherStatus{}
 	if len(weatherData.WeatherElements) == 0 {
-		code = 500 //errorCode.DecodeJsonError
+		code = errorCode.DecodeJsonError
 		return
 	}
 	now := time.Now()
