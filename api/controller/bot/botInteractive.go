@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"server/api/controller/botGetOrder"
 	"server/api/controller/movie"
 	"server/model/dao"
 	"server/service/mylib/errorCode"
@@ -234,7 +235,8 @@ func Bot() {
 					} else {
 						msg.Text = "您沒有權限執行這個指令"
 					}
-
+				case "OrderQ":
+					msg.Text = botGetOrder.OrderQuery("123")
 				default:
 					msg.Text = "type /help"
 				}
