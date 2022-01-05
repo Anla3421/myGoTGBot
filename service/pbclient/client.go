@@ -39,3 +39,15 @@ func BotOrderQuery(JWT string) *protobuf.BotOrderQueryResponse {
 	log.Printf("gRPC client:Response from BotOrderQuery Service: %v", res)
 	return res
 }
+
+func BotOrderUpdate(JWT string) *protobuf.BotOrderUpdateResponse {
+	req := &protobuf.BotOrderUpdateRequest{
+		JWT: JWT,
+	}
+	res, err := Client.BotOrderUpdate(context.Background(), req)
+	if err != nil {
+		log.Fatalf("gRPC client:error while calling BotOrderUpdate Service: %v \n", err)
+	}
+	log.Printf("gRPC client:Response from BotOrderUpdate Service: %v", res)
+	return res
+}

@@ -235,8 +235,8 @@ func Bot() {
 					} else {
 						msg.Text = "您沒有權限執行這個指令"
 					}
-				case "OrderQ":
-					msg.Text = botGetOrder.OrderQuery("123")
+				case "orderquery":
+					msg.Text = botGetOrder.OrderQuery("JWT")
 				default:
 					msg.Text = "type /help"
 				}
