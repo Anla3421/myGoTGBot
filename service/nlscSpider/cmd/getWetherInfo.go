@@ -10,7 +10,7 @@ import (
 	"server/service/nlscSpider/callback"
 	"server/service/nlscSpider/lib"
 
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
 func GetWeatherInfo(message *tgbotapi.Update) (code int, res tgbotapi.MessageConfig, err error) {

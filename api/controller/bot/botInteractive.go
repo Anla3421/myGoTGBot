@@ -1,8 +1,9 @@
 package bot
 
 import (
+	"encoding/json"
 	"fmt"
-	"log"
+	"net/url"
 	"os"
 	"server/api/controller/botGetOrder"
 	"server/api/controller/movie"
@@ -17,7 +18,8 @@ import (
 	"strings"
 	"time"
 
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
+	oldtgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
 var (
@@ -32,6 +34,7 @@ type command struct {
 type TelegramServer struct {
 	tgChannel    tgbotapi.UpdatesChannel
 	mainBot      *tgbotapi.BotAPI
+	oldmainBot   *oldtgbotapi.BotAPI
 	commandList  map[string]*command
 	sendChan     chan tgbotapi.Chattable
 	callbackChan chan tgbotapi.CallbackConfig
@@ -42,10 +45,7 @@ func Bot() {
 
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
-	updates, err := BotConn.GetUpdatesChan(u)
-	if err != nil {
-		log.Panic(err)
-	}
+	updates := BotConn.GetUpdatesChan(u)
 	fmt.Print("Success connected, bot online.")
 
 	TelegramSys = &TelegramServer{
@@ -65,7 +65,7 @@ func Bot() {
 	TelegramSys.AddCommandList("weather_list", "get one location weather info") // GetWeatherList
 
 	// 設定command list
-	_, _, err = TelegramSys.SetTgCommandList()
+	_, _, err := TelegramSys.SetTgCommandList()
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(2)
@@ -286,10 +286,44 @@ func (server *TelegramServer) SetTgCommandList() (code int, data interface{}, er
 			tgCommandList = append(tgCommandList, command.tgcommand)
 		}
 	}
-	err = server.mainBot.SetMyCommands(tgCommandList)
+	err = server.SetMyCommands(tgCommandList)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	return
+}
+
+// SetMyCommands changes the list of the bot's commands.
+func (server *TelegramServer) SetMyCommands(commands []tgbotapi.BotCommand) error {
+	v := url.Values{}
+	data, err := json.Marshal(commands)
+	if err != nil {
+		return err
+	}
+	v.Add("commands", string(data))
+	_, err = server.mainBot.MakeRequest("setMyCommands", v)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// AnswerCallbackQuery sends a response to an inline query callback.
+func (server *TelegramServer) AnswerCallbackQuery(config CallbackConfig) (APIResponse, error) {
+	v := url.Values{}
+
+	v.Add("callback_query_id", config.CallbackQueryID)
+	if config.Text != "" {
+		v.Add("text", config.Text)
+	}
+	v.Add("show_alert", strconv.FormatBool(config.ShowAlert))
+	if config.URL != "" {
+		v.Add("url", config.URL)
+	}
+	v.Add("cache_time", strconv.Itoa(config.CacheTime))
+
+	bot.debugLog("answerCallbackQuery", v, nil)
+
+	return bot.MakeRequest("answerCallbackQuery", v)
 }

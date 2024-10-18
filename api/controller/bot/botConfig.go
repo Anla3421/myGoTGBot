@@ -1,14 +1,14 @@
 package bot
 
 import (
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
 var Sugar string
 var Arguments string
 var Drinkid int = 0
 
-//Inlinekeyboard Setting
+// Inlinekeyboard Setting
 var InitialKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	tgbotapi.NewInlineKeyboardRow(
 		tgbotapi.NewInlineKeyboardButtonData("天氣", "天氣查詢"),
