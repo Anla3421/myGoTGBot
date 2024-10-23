@@ -228,7 +228,7 @@ func Bot() {
 					msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(list...)
 
 				case "clear":
-					if update.Message.Chat.ID == myviper.New().GetInt64("OwnerID") {
+					if update.Message.From.ID == myviper.New().GetInt("OwnerID") {
 						dao.Drinksqltruncate()
 						Drinkid = 0
 						msg.Text = "table clear complete"
@@ -249,16 +249,17 @@ func Bot() {
 					msg.ReplyMarkup = InitialKeyboard
 					msg.Text = "您今天想要點什麼呢?"
 				default:
-					//對特定人士回復特定的問候語
-					switch update.Message.Chat.ID {
-					case myviper.New().GetInt64("OwnerID"):
+					// 對特定人士回復特定的問候語
+					switch update.Message.From.ID {
+					case myviper.New().GetInt("OwnerID"):
 						msg.Text = "主人您好"
 					default:
-						msg.Text = "指令錯誤"
+						msg.Text = "指令錯誤，可以試試看hi, /help"
 					}
-					textToSend := "有人對你說，他是 " + strconv.Quote(update.Message.Chat.FirstName)
-					textToSend += strconv.Quote(update.Message.Chat.LastName) + " 他說： " + update.Message.Text + ", ID是 "
-					textToSend += strconv.FormatInt(update.Message.Chat.ID, 10)
+					// 回傳訊息告知 owner 有人使用 bot
+					textToSend := "有人對你說，他是 " + strconv.Quote(update.Message.From.FirstName)
+					textToSend += strconv.Quote(update.Message.From.LastName) + " 他說： " + update.Message.Text + ", ID是 "
+					textToSend += strconv.FormatInt(int64(update.Message.From.ID), 10)
 
 					BotConn.Send(tgbotapi.NewMessage(myviper.New().GetInt64("OwnerID"), textToSend))
 				}
