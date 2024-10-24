@@ -1,8 +1,8 @@
 package api
 
 import (
-	"server/api/controller/bot"
-	"server/api/controller/webpage"
+	"server/app/bot"
+	"server/app/webpage"
 	"server/view"
 
 	"github.com/gin-gonic/gin"

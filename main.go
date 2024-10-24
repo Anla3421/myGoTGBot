@@ -2,24 +2,21 @@ package main
 
 import (
 	"server/api"
-	"server/api/controller/bot"
-	"server/api/controller/movie"
-	"server/service/nlscSpider/cache"
-	_ "server/service/nlscSpider/scraper"
+	"server/app/bot"
+	"server/app/movie"
+	"server/infrastructure/service/nlscSpider/cache"
+
+	"github.com/gin-gonic/gin"
 )
 
-// ---------------------------------------------------------------------------
 func main() {
-
+	// checker.StartChecker() // 天氣爬蟲啟用會有問題，先關閉
 	cacheServer := cache.NewCacheServer()
 	go cacheServer.Run()
-
-	// checker.StartChecker() // 天氣爬蟲啟用會有問題，先關閉
-
-	go api.Api()
 	go bot.Bot()
+	go movie.MovieTimer() // map & channel
 
-	// movie.Moviespider() // DB & sleep
-	movie.MovieTimer() // map & channel
-
+	r := gin.Default()
+	api.Router(r)
+	r.Run(":8000")
 }
