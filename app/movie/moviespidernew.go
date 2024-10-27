@@ -2,6 +2,7 @@ package movie
 
 import (
 	"fmt"
+	"log"
 	"regexp"
 	"server/infrastructure/service/myviper"
 	"strconv"
@@ -44,5 +45,5 @@ func (task *MovieList) MoviespiderNew(sliceChan chan []string) {
 	}
 	elapsed := time.Since(start)
 	fmt.Printf("Took %s\n", elapsed)
-	fmt.Println("Moivelist update complete!")
+	log.Println("Moivelist update complete!")
 }

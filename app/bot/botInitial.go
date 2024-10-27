@@ -6,7 +6,6 @@ import (
 	"strconv"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
-	"github.com/golang/glog"
 )
 
 func init() {
@@ -21,7 +20,7 @@ func init() {
 	}
 	MovieKB = tgbotapi.NewInlineKeyboardMarkup(total...)
 
-	glog.Info("bot initial")
+	log.Println("bot initial")
 	bot, err := tgbotapi.NewBotAPI(myviper.New().GetString("BotToken"))
 	if err != nil {
 		log.Panic(err)
@@ -30,5 +29,4 @@ func init() {
 	bot.Debug = true
 	BotConn = bot
 	log.Printf("Authorized on account %s", bot.Self.UserName)
-
 }

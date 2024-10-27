@@ -2,7 +2,6 @@ package pbclient
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"server/infrastructure/service/pbclient/protobuf"
 
@@ -11,7 +10,7 @@ import (
 
 // gPRC client 連線建立
 func init() {
-	fmt.Println("gRPC client initial")
+	log.Println("gRPC client initial")
 	CreateConn()
 }
 
