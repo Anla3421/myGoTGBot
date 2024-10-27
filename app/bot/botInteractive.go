@@ -20,70 +20,58 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
-var (
-	TelegramSys *TelegramServer
-)
-
 type command struct {
 	tgcommand tgbotapi.BotCommand
-	fn        func(update *tgbotapi.Update) (int, tgbotapi.MessageConfig, error)
+	// fn        func(update *tgbotapi.Update) (int, tgbotapi.MessageConfig, error)
 }
 
 type TelegramServer struct {
-	tgChannel    tgbotapi.UpdatesChannel
-	mainBot      *tgbotapi.BotAPI
 	commandList  map[string]*command
 	sendChan     chan tgbotapi.Chattable
 	callbackChan chan tgbotapi.CallbackConfig
 	deletemsChan chan tgbotapi.DeleteMessageConfig
 }
 
-func Bot() {
+func BotInit() *TelegramServer {
+	return &TelegramServer{
+		commandList:  make(map[string]*command),
+		sendChan:     make(chan tgbotapi.Chattable),
+		callbackChan: make(chan tgbotapi.CallbackConfig),
+		deletemsChan: make(chan tgbotapi.DeleteMessageConfig),
+	}
+}
 
+func (server *TelegramServer) Bot() {
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 	updates, err := BotConn.GetUpdatesChan(u)
 	if err != nil {
 		log.Panic(err)
 	}
-	fmt.Print("Success connected, bot online.")
+	log.Println("Success connected, bot online.")
 
-	TelegramSys = &TelegramServer{
-		tgChannel:    updates, //channel
-		mainBot:      BotConn, //bot
-		commandList:  make(map[string]*command),
-		sendChan:     make(chan tgbotapi.Chattable),
-		callbackChan: make(chan tgbotapi.CallbackConfig),
-		deletemsChan: make(chan tgbotapi.DeleteMessageConfig),
-	}
-
-	// 新增command
-	TelegramSys.AddCommandList("drink", "order drink")                          // drinkOrder
-	TelegramSys.AddCommandList("total", "show total order list")                // OrderList
-	TelegramSys.AddCommandList("clear", "clear order list")                     // ClearOrderList
-	TelegramSys.AddCommandList("weather", "get all location weather info")      // GetWeatherInfo
-	TelegramSys.AddCommandList("weather_list", "get one location weather info") // GetWeatherList
-
-	// 設定command list
-	_, _, err = TelegramSys.SetTgCommandList()
+	// 新增 /xxx command
+	server.AddCommandList()
+	// 設定 command list
+	_, _, err = server.SetTgCommandList()
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(2)
 	}
 
 	for update := range updates {
+		// 互動式 keyborad 是否有回傳項目
 		if update.CallbackQuery != nil {
-
 			BotConn.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, ""))
 			msg := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Data)
 			switch update.CallbackQuery.Data {
-			//第二層面板喚醒
+			// 第二層面板喚醒
 			case "天氣查詢":
 				msg.ReplyMarkup = WeatherKB
 			case "豆瓣網電影精選":
 				msg.ReplyMarkup = MovieKB
-			//天氣選項回應
-			case "5": //我全都要
+			// 天氣選項回應
+			case "5": // 我全都要
 				msg.Text = ""
 				for ID := 1; ID < 5; ID++ {
 					result := dao.Weathersql(strconv.Itoa(ID)).Text + "\n"
@@ -95,11 +83,11 @@ func Bot() {
 				if result != "" {
 					msg.Text += result
 				}
-
 			}
-			//電影選項回應
-			if update.CallbackQuery.Message.Text == "豆瓣網電影精選" {
 
+			switch update.CallbackQuery.Message.Text {
+			// 電影選項回應
+			case "豆瓣網電影精選":
 				start := time.Now()
 				ID, _ := strconv.Atoi(update.CallbackQuery.Data)
 				msg.Text = ""
@@ -110,21 +98,19 @@ func Bot() {
 				// }
 
 				// for map use:
-				msg.Text = strings.Join(movie.GetMoviePage(strconv.Itoa(ID)), " \n")
-
-				msg.Text = "電影推薦TOP" + strconv.Itoa(1+25*(ID)) + "~" + strconv.Itoa(25*(ID+1)) + ":\n" +
-					msg.Text + "\n請使用https://movie.douban.com/subject/\n+上述電影的數字來進入該電影之介紹"
+				MoiveContent := strings.Join(movie.GetMoviePage(strconv.Itoa(ID)), " \n")
+				msg.Text = "電影推薦TOP" + strconv.Itoa(1+25*(ID)) + "~" + strconv.Itoa(25*(ID+1))
+				msg.Text += ":\n" + MoiveContent + "\n請使用https://movie.douban.com/subject/\n+上述電影的數字來進入該電影之介紹"
 				elapsed := time.Since(start)
 				fmt.Printf("Took %s\n", elapsed)
-			}
-			if update.CallbackQuery.Message.Text == "請選擇甜度" {
+			// 點飲料系統
+			case "請選擇甜度":
 				msg.Text = update.CallbackQuery.Data
 				Sugar = update.CallbackQuery.Data
 				BotConn.Send(msg)
 				msg.Text = "請選擇冰量"
 				msg.ReplyMarkup = IceKB
-			}
-			if update.CallbackQuery.Message.Text == "請選擇冰量" {
+			case "請選擇冰量":
 				msg.Text = update.CallbackQuery.Data
 				Ice := msg.Text
 				BotConn.Send(msg)
@@ -133,9 +119,7 @@ func Bot() {
 
 				msg.Text = Who + "點了: " + Arguments + " " + Sugar + update.CallbackQuery.Data
 				dao.Drinksql(Drinkid, Who, Arguments, Sugar, Ice)
-			}
-			if update.CallbackQuery.Message.Text == "選取地區" {
-
+			case "選取地區":
 				cache.Server.GetWeatherDataReq <- update.CallbackQuery.Data
 				weatherInfo := <-cache.Server.GetWeatherDataRes
 
@@ -153,11 +137,12 @@ func Bot() {
 
 				content += "最後更新時間" + weatherInfo.UpdateTime.Format(selfTime.TimeLayout) + "\n"
 				msg.Text = content
+			default:
 			}
 
 			BotConn.Send(msg)
 		}
-		//bot喚醒
+		// bot喚醒
 		if update.Message != nil {
 			if update.Message.IsCommand() {
 				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
@@ -207,14 +192,11 @@ func Bot() {
 					msg.Text = ""
 					cache.Server.GetAllWeatherDataReq <- true
 					weatherInfoList := <-cache.Server.GetAllWeatherDataRes
-
 					msg.Text = "選取地區"
-
 					list := [][]tgbotapi.InlineKeyboardButton{}
 
 					// 這邊是將所有地區整理成選單
 					rowList := tgbotapi.NewInlineKeyboardRow()
-
 					for _, each := range weatherInfoList {
 						rowList = append(rowList, tgbotapi.NewInlineKeyboardButtonData(each.LocationName, each.LocationName))
 						if len(rowList) == 4 {
@@ -226,7 +208,6 @@ func Bot() {
 						list = append(list, rowList)
 					}
 					msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(list...)
-
 				case "clear":
 					if update.Message.From.ID == myviper.New().GetInt("OwnerID") {
 						dao.Drinksqltruncate()
@@ -257,9 +238,9 @@ func Bot() {
 						msg.Text = "指令錯誤，可以試試看hi, /help"
 					}
 					// 回傳訊息告知 owner 有人使用 bot
-					textToSend := "有人對你說，他是 " + strconv.Quote(update.Message.From.FirstName)
-					textToSend += strconv.Quote(update.Message.From.LastName) + " 他說： " + update.Message.Text + ", ID是 "
-					textToSend += strconv.FormatInt(int64(update.Message.From.ID), 10)
+					textToSend := "有人傳訊息\n他是： " + strconv.Quote(update.Message.From.FirstName) + strconv.Quote(update.Message.From.LastName)
+					textToSend += "\n他說： " + update.Message.Text
+					textToSend += "\n ID是 " + strconv.FormatInt(int64(update.Message.From.ID), 10)
 
 					BotConn.Send(tgbotapi.NewMessage(myviper.New().GetInt64("OwnerID"), textToSend))
 				}
@@ -269,13 +250,16 @@ func Bot() {
 	}
 }
 
-// 將可用的指令 統一整理
-func (server *TelegramServer) AddCommandList(act string, des string) {
-	server.commandList[act] = &command{
-		tgcommand: tgbotapi.BotCommand{
-			Command:     act,
-			Description: des,
-		},
+// 統一新增 /xxx 可用的 command
+func (server *TelegramServer) AddCommandList() {
+	needtoAdd := SlashCommandList
+	for act, des := range needtoAdd {
+		server.commandList[act] = &command{
+			tgcommand: tgbotapi.BotCommand{
+				Command:     act,
+				Description: des,
+			},
+		}
 	}
 }
 
@@ -287,7 +271,7 @@ func (server *TelegramServer) SetTgCommandList() (code int, data interface{}, er
 			tgCommandList = append(tgCommandList, command.tgcommand)
 		}
 	}
-	err = server.mainBot.SetMyCommands(tgCommandList)
+	err = BotConn.SetMyCommands(tgCommandList)
 	if err != nil {
 		fmt.Println(err)
 		return

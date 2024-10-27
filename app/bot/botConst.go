@@ -4,6 +4,12 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
+var MovieKB tgbotapi.InlineKeyboardMarkup
+
+var row = []tgbotapi.InlineKeyboardButton{}
+var total = [][]tgbotapi.InlineKeyboardButton{}
+var BotConn *tgbotapi.BotAPI
+
 var Sugar string
 var Arguments string
 var Drinkid int = 0
@@ -36,6 +42,7 @@ var SugarKB = tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardButtonData("無糖", "無糖"),
 	),
 )
+
 var IceKB = tgbotapi.NewInlineKeyboardMarkup(
 	tgbotapi.NewInlineKeyboardRow(
 		tgbotapi.NewInlineKeyboardButtonData("全冰", "全冰"),
@@ -45,8 +52,11 @@ var IceKB = tgbotapi.NewInlineKeyboardMarkup(
 	),
 )
 
-var MovieKB tgbotapi.InlineKeyboardMarkup
-
-var row = []tgbotapi.InlineKeyboardButton{}
-var total = [][]tgbotapi.InlineKeyboardButton{}
-var BotConn *tgbotapi.BotAPI
+// /xxx commands
+var SlashCommandList = map[string]string{
+	"drink":        "order drink",
+	"total":        "show total order list",
+	"clear":        "clear order list",
+	"weather":      "get all location weather info",
+	"weather_list": "get one location weather info",
+}

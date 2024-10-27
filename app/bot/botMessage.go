@@ -21,6 +21,7 @@ type (
 	}
 )
 
+// 接收 api post /message的 message 內容直接並傳送給 tg 上的 ownwerID
 func Message(c *gin.Context) {
 	Input := MessageInput{}
 	response := MessageResponse{}
