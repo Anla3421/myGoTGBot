@@ -1,6 +1,16 @@
 # MyGoTGBot
 
-一個功能豐富的 Telegram 機器人，使用 Go 語言開發。
+一個使用 Go 語言開發的 Telegram 機器人。
+
+## 啟動服務
+1. 建立 docker 根目錄下...
+```bash
+bash ./infrastructure/docker/go.sh
+```
+2. 啟動服務
+```bash
+go run main.go
+```
 
 ## 功能特點
 
